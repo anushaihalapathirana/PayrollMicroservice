@@ -104,5 +104,4 @@ class PayrollCollection(Resource):
                     "payroll Calculation Error")
             
         return Response(json.dumps(body), status=200, mimetype="application/vnd.mason+json")
-        
-        # return Response(response={}, status=201)
+
