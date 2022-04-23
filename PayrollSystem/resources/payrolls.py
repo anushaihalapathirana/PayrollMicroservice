@@ -51,6 +51,7 @@ class PayrollCollection(Resource):
         """
         daysToWork = 20
         allowedLeaves = 1
+
         if not request.json:
             return create_error_message(
                 415, "Unsupported media type",
@@ -95,7 +96,6 @@ class PayrollCollection(Resource):
                 data['empID'] = empID
                 data['payrollDate'] = json.dumps(datetime.datetime.combine(today, datetime.time(0, 0)), indent = 4, sort_keys = True, default = str)
                 data['payrollStartDate'] = json.dumps(datetime.datetime.combine(today, datetime.time(0, 0)), indent = 4, sort_keys = True, default = str)
-                
                 body['payroll'].append(data)
 
         except Exception as error:
@@ -103,5 +103,5 @@ class PayrollCollection(Resource):
                      500, "Error occurred",
                     "payroll Calculation Error")
             
-        return Response(json.dumps(body), status=200, mimetype="application/vnd.mason+json")
+        return Response(json.dumps(body), status=200, mimetype="application/json")
 
