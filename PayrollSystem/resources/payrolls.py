@@ -1,6 +1,8 @@
 """
     This resource file contains the payroll related REST calls implementation
 """
+import json
+import datetime
 from jsonschema import validate, ValidationError
 from flask import Response, request
 from flask_restful import Resource
@@ -36,9 +38,6 @@ class PayrollCollection(Resource):
         """ Create a new Payroll
         Arguments:
             request:
-                date: 2002-20-1
-                amount: 12356
-                employee_id: 001
         Returns:
             responses:
                 '201':
@@ -50,6 +49,8 @@ class PayrollCollection(Resource):
                 '415':
                 description: Wrong media type was used
         """
+        daysToWork = 20
+        allowedLeaves = 1
         if not request.json:
             return create_error_message(
                 415, "Unsupported media type",
@@ -57,105 +58,51 @@ class PayrollCollection(Resource):
             )
 
         try:
-            validate(request.json, Payroll.get_schema())
-        except ValidationError:
-            return create_error_message(
-                400, "Invalid JSON document",
-                "JSON format is not valid"
-            )
+            req = request.json
+            employeeList = req["items"]
+            today = datetime.date.today()
+            margin = datetime.timedelta(days = 20)
 
-        try:
-            payroll = Payroll()
-            payroll.deserialize(request)
-            db.session.add(payroll)
-            db.session.commit()
+            body = {}
+            body['payroll'] = []
+
+            for employee in employeeList:
+                data = {}
+                monthlyLeaves = []
+                salary = 0
+                empID = employee["emp"]["employee_id"]
+                accNo = employee["emp"]["account_number"]
+                basicSalary = employee['emp']['basic_salary']
+                oneDaySalary = basicSalary/daysToWork
+
+                leaves = employee['leaves']
+                for leave in leaves:
+                    leaveDate = datetime.datetime.strptime(leave['leave_date'], "%Y-%m-%dT%H:%M:%S").strftime('%Y-%m-%d')
+                    df = datetime.datetime.combine(today-margin, datetime.time(0, 0))
+                    
+                    if(df <= datetime.datetime.strptime(leaveDate, "%Y-%m-%d")):
+                        monthlyLeaves.append(leave)
+              
+                if(len(monthlyLeaves) > allowedLeaves):
+                    salary = basicSalary - (oneDaySalary * (len(monthlyLeaves) - allowedLeaves))
+                else:
+                    salary = basicSalary
+
+                data['salary'] = salary
+                data['basic'] = basicSalary
+                data['deducted'] = basicSalary - salary
+                data['accNo'] = accNo
+                data['empID'] = empID
+                data['payrollDate'] = json.dumps(datetime.datetime.combine(today, datetime.time(0, 0)), indent = 4, sort_keys = True, default = str)
+                data['payrollStartDate'] = json.dumps(datetime.datetime.combine(today, datetime.time(0, 0)), indent = 4, sort_keys = True, default = str)
+                
+                body['payroll'].append(data)
+
         except Exception as error:
-            if isinstance(error, HTTPException):
-                return create_error_message(
-                     409, "Already Exist",
-                    "payroll code is already exist"
-            )
-        return Response(response={}, status=201)
-
-# class PayrollItem(Resource):
-#     """ This class contains the GET, PUT and DELETE method implementations for a single payroll
-#         Arguments:
-#         Returns:
-#         Endpoint - /api/payrolls/<payroll>
-#     """
-#     def get(self, payroll):
-#         """ get details of one payroll
-#         Arguments:
-#             payroll
-#         Returns:
-#             Response
-#                 '200':
-#                 description: Data of list of payroll
-#                 '404':
-#                 description: The payroll was not found
-#         """
-#         response_data =  payroll.serialize()
-
-#         return response_data
-
-#     def delete(self, payroll):
-#         """ Delete the selected payroll
-#         Arguments:
-#             payroll
-#         Returns:
-#             responses:
-#                 '204':
-#                     description: The payroll was successfully deleted
-#                 '404':
-#                     description: The payroll was not found
-#         """
-#         db.session.delete(payroll)
-#         db.session.commit()
-
-#         return Response(status=204)
-
-#     def put(self, payroll):
-#         """ Replace payroll's basic data with new values
-#         Arguments:
-#             payroll
-#         Returns:
-#             responses:
-#                 '204':
-#                 description: The payroll's attributes were updated successfully
-#                 '400':
-#                 description: The request body was not valid
-#                 '404':
-#                 description: The payroll was not found
-#                 '409':
-#                 description: A payroll with the same name already exists
-#                 '415':
-#                 description: Wrong media type was used
-#         """
-#         db_payroll = Payroll.query.filter_by(code=payroll.id).first()
-
-#         if not request.json:
-#             return create_error_message(
-#                 415, "Unsupported media type",
-#                 "Payload format is in an unsupported format"
-#             )
-
-#         try:
-#             validate(request.json, Payroll.get_schema())
-#         except ValidationError:
-#             return create_error_message(
-#                 400, "Invalid JSON document",
-#                 "JSON format is not valid"
-#             )
-
-#         db_payroll.name = request.json["name"]
-#         db_payroll.id = request.json["code"]
-#         db_payroll.description = request.json["description"]
-
-#         try:
-#             db.session.commit()
-#         except Exception: return create_error_message(
-#                 500, "Internal server Error",
-#                 "Error while updating the payroll"
-#             )
-
-#         return Response(status = 204)
+            return create_error_message(
+                     500, "Error occurred",
+                    "payroll Calculation Error")
+            
+        return Response(json.dumps(body), status=200, mimetype="application/vnd.mason+json")
+        
+        # return Response(response={}, status=201)

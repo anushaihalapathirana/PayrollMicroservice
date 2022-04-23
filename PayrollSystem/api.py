@@ -8,6 +8,5 @@ from PayrollSystem.resources.payrolls import PayrollCollection
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 api = Api(api_bp)
 
-# roles related resources
+# related resources
 api.add_resource(PayrollCollection, "/payrolls/")
-# api.add_resource(RoleItem, "/roles/<Role:role>/")
