@@ -4,7 +4,16 @@
 [Ll]ib
 [Ll]ib64
 [Ll]ocal
-[Ss]cripts
+Scripts
 pyvenv.cfg
 .venv
+.pyc
 pip-selfcheck.json
+**/__pycache__/
+cache
+instance
+hrcode.db
+.coverage
+static
+static_old
+var

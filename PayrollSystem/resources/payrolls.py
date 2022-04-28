@@ -12,12 +12,14 @@ from PayrollSystem import db
 from PayrollSystem.models import Payroll
 from PayrollSystem.utils import create_error_message
 
+
 class PayrollCollection(Resource):
     """ This class contains the GET and POST method implementations for payroll data
         Arguments:
         Returns:
         Endpoint: /api/payrolls/
     """
+
     def get(self):
         """ GET list of payrolls
             Arguments:
@@ -62,7 +64,8 @@ class PayrollCollection(Resource):
             req = request.json
             employeeList = req["items"]
             today = datetime.date.today()
-            margin = datetime.timedelta(days = 20)
+            margin = datetime.timedelta(days=20)
+            df = today-margin
 
             body = {}
             body['payroll'] = []
@@ -78,14 +81,16 @@ class PayrollCollection(Resource):
 
                 leaves = employee['leaves']
                 for leave in leaves:
-                    leaveDate = datetime.datetime.strptime(leave['leave_date'], "%Y-%m-%dT%H:%M:%S").strftime('%Y-%m-%d')
-                    df = datetime.datetime.combine(today-margin, datetime.time(0, 0))
-                    
-                    if(df <= datetime.datetime.strptime(leaveDate, "%Y-%m-%d")):
+                    leaveDate = datetime.datetime.strptime(
+                        leave['leave_date'], "%Y-%m-%dT%H:%M:%S")
+                    print("TYPE", type(leaveDate.date()))
+
+                    if(df <= leaveDate.date()):
                         monthlyLeaves.append(leave)
-              
+
                 if(len(monthlyLeaves) > allowedLeaves):
-                    salary = basicSalary - (oneDaySalary * (len(monthlyLeaves) - allowedLeaves))
+                    salary = basicSalary - \
+                        (oneDaySalary * (len(monthlyLeaves) - allowedLeaves))
                 else:
                     salary = basicSalary
 
@@ -94,14 +99,15 @@ class PayrollCollection(Resource):
                 data['deducted'] = basicSalary - salary
                 data['accNo'] = accNo
                 data['empID'] = empID
-                data['payrollDate'] = json.dumps(datetime.datetime.combine(today, datetime.time(0, 0)), indent = 4, sort_keys = True, default = str)
-                data['payrollStartDate'] = json.dumps(datetime.datetime.combine(today, datetime.time(0, 0)), indent = 4, sort_keys = True, default = str)
+                data['payrollDate'] = str(today.isoformat())
+                # data['payrollDate'] = json.dumps(datetime.datetime.combine(today, datetime.time(0, 0)), indent = 4, sort_keys = True, default = str)
+                data['payrollStartDate'] = str(df.isoformat())
                 body['payroll'].append(data)
 
         except Exception as error:
+            print(error)
             return create_error_message(
-                     500, "Error occurred",
-                    "payroll Calculation Error")
-            
-        return Response(json.dumps(body), status=200, mimetype="application/json")
+                500, "Error occurred",
+                "payroll Calculation Error")
 
+        return Response(json.dumps(body), status=200, mimetype="application/json")
