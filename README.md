@@ -8,7 +8,7 @@
 # Setup database
  - Requirements : Python3, Pip
 
-- Libraries used : flask, flask_sqlalchemy
+- Libraries used : flask, flask_sqlalchemy, requests
 
 Please install all the dependencies using
 ```  
@@ -31,4 +31,13 @@ Follow below instructions to setup the databases
 
 More details about the database can be found here - https://github.com/anushaihalapathirana/PWP/wiki/Database-design-and-implementation
 
+# Run Payroll microservice
 
+Use below commands to run payroll microservice
+
+```
+    export FLASK_APP=PayrollSystem/
+    flask run --port=5500
+```
+
+Application will run on http://127.0.0.1:5500/ 

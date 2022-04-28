@@ -37,19 +37,13 @@ class PayrollCollection(Resource):
         return response_data
 
     def post(self):
-        """ Create a new Payroll
+        """ Create Payroll data. auxilary service.
         Arguments:
             request:
         Returns:
             responses:
-                '201':
-                description: The Payroll was created successfully
-                '400':
-                description: The request body was not valid
-                '409':
-                description: A payroll with the same code already exists
-                '415':
-                description: Wrong media type was used
+                '500':
+                description: internal error
         """
         daysToWork = 20
         allowedLeaves = 1
