@@ -14,7 +14,9 @@ def create_app(test_config=None):
     """
     method to create application
 
-    - Note reference to this method - course materials https://github.com/enkwolf/pwp-course-sensorhub-api-example/blob/master
+    - Note reference to this method -
+    course materials
+    https://github.com/enkwolf/pwp-course-sensorhub-api-example/blob/master
     """
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
@@ -23,13 +25,6 @@ def create_app(test_config=None):
         os.path.join(app.instance_path, "hrcore.db"),
         SQLALCHEMY_TRACK_MODIFICATIONS=False
     )
-    
-    # app.config["SWAGGER"] = {
-    #     "title": "HR System API",
-    #     "openapi": "3.0.3",
-    #     "uiversion": 3,
-    # }
-    # swagger = Swagger(app, template_file="doc/hrsystem.yml")
 
     app.config["CACHE_TYPE"] = "FileSystemCache"
     app.config["CACHE_DIR"] = "cache"
@@ -46,11 +41,11 @@ def create_app(test_config=None):
     db.init_app(app)
     cache.init_app(app)
 
-    from PayrollSystem.converters import PayrollConverter
+    from payroll_system.converters import PayrollConverter
     # Add converters
     app.url_map.converters["Payroll"] = PayrollConverter
 
-    from PayrollSystem.dbutils import init_db_command, generate_test_data
+    from payroll_system.dbutils import init_db_command, generate_test_data
     from . import api
 
     app.cli.add_command(init_db_command)

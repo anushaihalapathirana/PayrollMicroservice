@@ -1,3 +1,7 @@
+"""
+This filel contains the utility function
+support for payroll api
+"""
 from flask import abort
 
 def create_error_message(status_code, error, message=None):

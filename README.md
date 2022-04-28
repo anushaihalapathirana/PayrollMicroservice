@@ -36,8 +36,16 @@ More details about the database can be found here - https://github.com/anushaiha
 Use below commands to run payroll microservice
 
 ```
-    export FLASK_APP=PayrollSystem/
+    export FLASK_APP=payroll_system/
     flask run --port=5500
 ```
 
 Application will run on http://127.0.0.1:5500/ 
+
+# Code quality
+
+Pylint use to check code quality in this project
+
+```
+pylint payroll_system/
+```

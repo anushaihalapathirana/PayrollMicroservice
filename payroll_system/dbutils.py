@@ -1,16 +1,12 @@
 # this script use to enter data to the payroll database
-
-
-
 """
 This class use to generate database and its data
 """
-import secrets
 from datetime import datetime
 import click
 from flask.cli import with_appcontext
-from PayrollSystem import db
-from PayrollSystem.models import Payroll
+from payroll_system import db
+from payroll_system.models import Payroll
 
 @click.command("init-db")
 @with_appcontext
@@ -46,13 +42,8 @@ def generate_test_data():
     payroll8 = Payroll(date=datetime(2018, 12, 21, 11, 20, 30),
                     amount=125553, employee_id="001")
 
-    db.session.add(payroll)
-    db.session.add(payroll2)
-    db.session.add(payroll3)
-    db.session.add(payroll4)
-    db.session.add(payroll5)
-    db.session.add(payroll6)
-    db.session.add(payroll7)
-    db.session.add(payroll8)
+    db.session.add(payroll, payroll2, payroll3,
+    payroll4, payroll5,
+    payroll6, payroll7, payroll8)
 
     db.session.commit()

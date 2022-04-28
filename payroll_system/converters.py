@@ -3,8 +3,8 @@
 This file contains the Converter methods
 """
 from werkzeug.routing import BaseConverter
-from PayrollSystem.models import Payroll
-from PayrollSystem.utils import create_error_message
+from payroll_system.models import Payroll
+from payroll_system.utils import create_error_message
 
 class PayrollConverter(BaseConverter):
     """

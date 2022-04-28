@@ -3,14 +3,10 @@
 """
 import json
 import datetime
-from jsonschema import validate, ValidationError
 from flask import Response, request
 from flask_restful import Resource
-from sqlalchemy.exc import IntegrityError
-from werkzeug.exceptions import HTTPException
-from PayrollSystem import db
-from PayrollSystem.models import Payroll
-from PayrollSystem.utils import create_error_message
+from payroll_system.models import Payroll
+from payroll_system.utils import create_error_message
 
 
 class PayrollCollection(Resource):
@@ -45,8 +41,8 @@ class PayrollCollection(Resource):
                 '500':
                 description: internal error
         """
-        daysToWork = 20
-        allowedLeaves = 1
+        days_to_work = 20
+        allowed_leaves = 1
 
         if not request.json:
             return create_error_message(
@@ -56,46 +52,45 @@ class PayrollCollection(Resource):
 
         try:
             req = request.json
-            employeeList = req["items"]
+            employee_list = req["items"]
             today = datetime.date.today()
             margin = datetime.timedelta(days=20)
-            df = today-margin
+            payroll_start = today-margin
 
             body = {}
             body['payroll'] = []
 
-            for employee in employeeList:
+            for employee in employee_list:
                 data = {}
-                monthlyLeaves = []
+                monthly_leaves = []
                 salary = 0
-                empID = employee["emp"]["employee_id"]
-                accNo = employee["emp"]["account_number"]
-                basicSalary = employee['emp']['basic_salary']
-                oneDaySalary = basicSalary/daysToWork
+                emp_id = employee["emp"]["employee_id"]
+                acc_no = employee["emp"]["account_number"]
+                basic_salary = employee['emp']['basic_salary']
+                one_day_salary = basic_salary/days_to_work
 
                 leaves = employee['leaves']
                 for leave in leaves:
-                    leaveDate = datetime.datetime.strptime(
+                    leave_date = datetime.datetime.strptime(
                         leave['leave_date'], "%Y-%m-%dT%H:%M:%S")
-                    print("TYPE", type(leaveDate.date()))
+                    print("TYPE", type(leave_date.date()))
 
-                    if(df <= leaveDate.date()):
-                        monthlyLeaves.append(leave)
+                    if payroll_start <= leave_date.date():
+                        monthly_leaves.append(leave)
 
-                if(len(monthlyLeaves) > allowedLeaves):
-                    salary = basicSalary - \
-                        (oneDaySalary * (len(monthlyLeaves) - allowedLeaves))
+                if len(monthly_leaves) > allowed_leaves:
+                    salary = basic_salary - \
+                        (one_day_salary * (len(monthly_leaves) - allowed_leaves))
                 else:
-                    salary = basicSalary
+                    salary = basic_salary
 
                 data['salary'] = salary
-                data['basic'] = basicSalary
-                data['deducted'] = basicSalary - salary
-                data['accNo'] = accNo
-                data['empID'] = empID
+                data['basic'] = basic_salary
+                data['deducted'] = basic_salary - salary
+                data['accNo'] = acc_no
+                data['empID'] = emp_id
                 data['payrollDate'] = str(today.isoformat())
-                # data['payrollDate'] = json.dumps(datetime.datetime.combine(today, datetime.time(0, 0)), indent = 4, sort_keys = True, default = str)
-                data['payrollStartDate'] = str(df.isoformat())
+                data['payrollStartDate'] = str(payroll_start.isoformat())
                 body['payroll'].append(data)
 
         except Exception as error:

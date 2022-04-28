@@ -1,8 +1,14 @@
-
+"""
+Database model class
+"""
 from datetime import datetime
-from PayrollSystem import db
+from payroll_system import db
 
 class Payroll(db.Model):
+    """
+    payroll database
+    Table-payroll
+    """
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.DateTime, nullable=False)
     amount = db.Column(db.Integer, nullable=False)
@@ -11,7 +17,7 @@ class Payroll(db.Model):
     @staticmethod
     def get_schema():
         """
-        method to get schema 
+        method to get schema
         """
         schema = {
             "type": "object",
@@ -53,8 +59,4 @@ class Payroll(db.Model):
         self.date = datetime.fromisoformat(
             request.json['date'])
         self.employee_id = request.json['employee_id']
-
-
-
-
  
